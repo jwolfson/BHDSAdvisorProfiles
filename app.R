@@ -20,15 +20,12 @@ umn_theme <- bs_theme(
 service_account_json <- Sys.getenv("GCP_SERVICE_ACCOUNT_JSON")
 
 if (nzchar(service_account_json)) {
-  # Parse JSON into a list
-  creds <- jsonlite::fromJSON(service_account_json, simplifyVector = FALSE)
-  
-  # Authenticate directly with the JSON object
-  gs4_auth(credentials = creds)
+  tmp <- tempfile(fileext = ".json")
+  writeLines(service_account_json, tmp)
+  gs4_auth(path = tmp)
 } else {
   stop("No Google service account JSON found in environment variable")
 }
-
 
 # URL or ID of your Google Sheet (faculty responses)
 sheet_url <- "https://docs.google.com/spreadsheets/d/1teBeYg2zV3bqq9rYOrQDB7deNZ7XrlVZhUtnT6Ygyhk/edit?usp=sharing"
@@ -336,3 +333,4 @@ server <- function(input, output, session) {
 
 # Custom message handler registration so the server can trigger initGoogleSignIn
 shinyApp(ui = ui, server = server, options = list(port = 1234))
+
