@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(jsonlite)
 library(googlesheets4)
 library(dplyr)
 library(bslib)
@@ -15,8 +16,19 @@ umn_theme <- bs_theme(
   bootswatch = "materia"
 )
 
-# Authenticate using a service account JSON file
-gs4_auth(path = "bhds-advisor-profile-6c0afb03d442.json")
+# Read JSON credentials from environment variable
+service_account_json <- Sys.getenv("GCP_SERVICE_ACCOUNT_JSON")
+
+if (nzchar(service_account_json)) {
+  # Parse JSON into a list
+  creds <- jsonlite::fromJSON(service_account_json, simplifyVector = FALSE)
+  
+  # Authenticate directly with the JSON object
+  gs4_auth(credentials = creds)
+} else {
+  stop("No Google service account JSON found in environment variable")
+}
+
 
 # URL or ID of your Google Sheet (faculty responses)
 sheet_url <- "https://docs.google.com/spreadsheets/d/1teBeYg2zV3bqq9rYOrQDB7deNZ7XrlVZhUtnT6Ygyhk/edit?usp=sharing"
